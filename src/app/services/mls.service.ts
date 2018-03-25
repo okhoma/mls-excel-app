@@ -49,8 +49,8 @@ export class MlsService {
         const body = {};
 
         // Ensure a value exists
-        if (inputParameters[0].value != null) {
-            inputParameters.forEach((element: ExcelParameter) => {
+        inputParameters.forEach((element: ExcelParameter) => {
+            if (element.value != null) {
                 // The Excel value format is [][], so it needs to be processed differently depending on the input data type
                 if (element.type === 'data.frame') {
                     // Processing data frame with generic labels c0, c1, c2, etc.
@@ -69,23 +69,23 @@ export class MlsService {
                 } else {
                     body[element.name] = element.value[0][0];
                 }
-            });
+            } else {
+                return Observable.throw('Invalid parameters');
+            }
+        });
 
-            // Get output from web service api endpoint
-            return this.http.post(connection, body, { headers: headers })
-                .map(
-                (response: Response) => {
-                    const data = response.json();
-                    return data['outputParameters'];
-                })
-                .catch(
-                (error: Response) => {
-                    /*WebService Component is currently handling error messaging
-                    so that the necessary rerouting can take place if needed to reauthenticate*/
-                    return Observable.throw(error);
-                });
-        } else {
-            return Observable.throw('Invalid parameters');
-        }
+        // Get output from web service api endpoint
+        return this.http.post(connection, body, { headers: headers })
+            .map(
+            (response: Response) => {
+                const data = response.json();
+                return data['outputParameters'];
+            })
+            .catch(
+            (error: Response) => {
+                /*WebService Component is currently handling error messaging
+                so that the necessary rerouting can take place if needed to reauthenticate*/
+                return Observable.throw(error);
+            });
     }
 }
